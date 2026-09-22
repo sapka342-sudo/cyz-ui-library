@@ -5,7 +5,7 @@ keine externen Assets — jedes Icon ist aus Primitiven gezeichnet, es kann also
 nichts nachladen und fehlschlagen.
 
 ```lua
-local Cyz = loadstring(game:HttpGet("<deine-url>/cyz.lua"))()
+local Cyz = loadstring(game:HttpGet("https://raw.githubusercontent.com/sapka342-sudo/cyz-ui-library/main/src/cyz.lua"))()
 
 local Window = Cyz:CreateWindow({
     Title    = "mein script",
@@ -190,7 +190,8 @@ Box:AddDropdown("Target", {
 
 Bei `Multi = true` ist `.Value` eine Menge (`{ ["Head"] = true }`);
 `:GetSelected()` gibt eine geordnete Liste zurück. `:SetValues(liste)` tauscht
-die Auswahlmöglichkeiten und behält gültige Auswahlen bei.
+die Auswahlmöglichkeiten und behält gültige Auswahlen bei. `:Open()` und
+`:Close()` klappen das Panel auch ohne Mausklick auf.
 
 ### Input
 
@@ -232,7 +233,8 @@ Box:AddColorpicker("EspColor", {
 })
 ```
 
-SV-Fläche, Farbtonleiste, optionale Alpha-Leiste und ein Hex-Feld.
+SV-Fläche, Farbtonleiste, optionale Alpha-Leiste und ein Hex-Feld. Auch hier
+öffnen und schließen `:Open()` und `:Close()` das Panel aus dem Code heraus.
 
 ### Theme-Picker
 

@@ -6,7 +6,7 @@
     executor's workspace folder as cyz/cyz.lua and this picks it up instead.
 ]]
 
-local CYZ_URL = "https://raw.githubusercontent.com/YOURNAME/cyz/main/src/cyz.lua"
+local CYZ_URL = "https://raw.githubusercontent.com/sapka342-sudo/cyz-ui-library/main/src/cyz.lua"
 
 local function loadCyz()
     if isfile and isfile("cyz/cyz.lua") then
