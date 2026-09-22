@@ -1,14 +1,13 @@
 # cyz
 
-Eine moderne UI-Library für Roblox. Eine einzige Datei, keine Abhängigkeiten,
-keine externen Assets — jedes Icon ist aus Primitiven gezeichnet, es kann also
-nichts nachladen und fehlschlagen.
+A modern UI library for Roblox. One file, no dependencies, no external assets —
+every icon is drawn from primitives, so nothing can fail to load at runtime.
 
 ```lua
 local Cyz = loadstring(game:HttpGet("https://raw.githubusercontent.com/sapka342-sudo/cyz-ui-library/main/src/cyz.lua"))()
 
 local Window = Cyz:CreateWindow({
-    Title    = "mein script",
+    Title    = "my script",
     SubTitle = "v1.0.0",
     Theme    = "Midnight",
     Acrylic  = true,
@@ -24,91 +23,94 @@ Box:AddToggle("Aimbot", {
 })
 ```
 
-`RightShift` blendet das Menü ein und aus.
+`RightShift` shows and hides the menu.
+
+> **Note** — `HttpGet` can only reach the URL above once this repository is
+> **public**. While it is private, raw.githubusercontent.com answers `404` and
+> the loader fails. Either switch the repository to public in Settings, or host
+> `src/cyz.lua` somewhere reachable and point the URL there.
 
 ---
 
-## Inhalt
+## Contents
 
-- [Aufbau](#aufbau)
-- [Fenster](#fenster)
-- [Tabs und Sections](#tabs-und-sections)
-- [Elemente](#elemente)
+- [Layout](#layout)
+- [Window](#window)
+- [Tabs and sections](#tabs-and-sections)
+- [Elements](#elements)
 - [Flags](#flags)
-- [Konfigurationen](#konfigurationen)
+- [Configs](#configs)
 - [Themes](#themes)
-- [Benachrichtigungen und Dialoge](#benachrichtigungen-und-dialoge)
-- [Wasserzeichen](#wasserzeichen)
-- [Aufräumen](#aufräumen)
-- [Umgebungen](#umgebungen)
+- [Notifications and dialogs](#notifications-and-dialogs)
+- [Watermark](#watermark)
+- [Unloading](#unloading)
+- [Environments](#environments)
 
 ---
 
-## Aufbau
+## Layout
 
 ```
-src/cyz.lua        die Library
-examples/demo.lua  Showcase mit jedem Element
+src/cyz.lua        the library
+examples/demo.lua  showcase using every element
 ```
 
-Die Library ist eine Datei, weil sie per `loadstring` geladen wird. Sie ist
-intern in benannte Regionen gegliedert (`--#region`), die man im Editor
-zuklappen kann.
+The library is a single file because it is loaded with `loadstring`. Internally
+it is split into named regions (`--#region`) that fold in most editors.
 
 ---
 
-## Fenster
+## Window
 
 ```lua
 local Window = Cyz:CreateWindow({
-    Title        = "cyz",                     -- Name links oben
-    SubTitle     = "v1.0.0",                  -- Zeile darunter
+    Title        = "cyz",                     -- name in the top left
+    SubTitle     = "v1.0.0",                  -- line underneath it
     Size         = UDim2.fromOffset(760, 500),
-    MinSize      = Vector2.new(480, 320),     -- Grenzen für den Resize-Griff
+    MinSize      = Vector2.new(480, 320),     -- limits for the resize grip
     MaxSize      = Vector2.new(1400, 900),
     Position     = UDim2.fromScale(0.5, 0.5),
     Theme        = "Midnight",
-    Acrylic      = true,                      -- 3D-Welt hinter dem Menü weichzeichnen
+    Acrylic      = true,                      -- blur the 3D world behind the menu
     Resizable    = true,
     ToggleKey    = Enum.KeyCode.RightShift,
-    ToggleButton = true,                      -- schwebender Chip zum Wiederöffnen
-    ConfigFolder = "cyz/meinscript",
-    DestroyOnClose = false,                   -- X schließt statt zu entladen
+    ToggleButton = true,                      -- floating chip to reopen it
+    ConfigFolder = "cyz/myscript",
+    DestroyOnClose = false,                   -- X hides instead of unloading
     OnClose      = function() end,
 })
 ```
 
-| Methode | Wirkung |
+| Method | Effect |
 |---|---|
-| `Window:AddTab(opts)` | Neuer Tab, siehe unten |
-| `Window:SelectTab(x)` | `x` = Index, Titel oder Tab-Objekt |
-| `Window:Toggle(bool?)` | Ein-/ausblenden; ohne Argument umschalten |
-| `Window:Minimize(bool?)` | Auf die Titelleiste einklappen |
-| `Window:Dialog(opts)` | Modal, siehe unten |
-| `Window:SetTitle(s)` / `SetSubTitle(s)` | Kopfzeile ändern |
-| `Window:SetToggleKey(key)` | Menü-Taste neu belegen |
-| `Window:AddThemeSection(tab, titel?)` | Fertige Theme-Auswahl einsetzen |
-| `Window:AddConfigSection(tab, titel?)` | Fertige Config-Verwaltung einsetzen |
+| `Window:AddTab(opts)` | New tab, see below |
+| `Window:SelectTab(x)` | `x` = index, title or tab object |
+| `Window:Toggle(bool?)` | Show/hide; no argument toggles |
+| `Window:Minimize(bool?)` | Collapse to the title bar |
+| `Window:Dialog(opts)` | Modal, see below |
+| `Window:SetTitle(s)` / `SetSubTitle(s)` | Change the header |
+| `Window:SetToggleKey(key)` | Rebind the menu key |
+| `Window:AddThemeSection(tab, title?)` | Drop in a ready-made theme picker |
+| `Window:AddConfigSection(tab, title?)` | Drop in a ready-made config manager |
 
-Das Fenster lässt sich an Titelleiste und Kopfbereich ziehen und unten rechts
-in der Größe ändern. Es kann nicht so weit aus dem Bild gezogen werden, dass man
-es nicht mehr zurückholen kann.
+The window drags by its title bar and header, and resizes from the bottom-right
+grip. It cannot be dragged so far off screen that it can't be dragged back.
 
 ---
 
-## Tabs und Sections
+## Tabs and sections
 
 ```lua
 local Tab = Window:AddTab({ Title = "Visuals", Icon = "V" })
 local Box = Tab:AddSection("ESP")
 ```
 
-`Icon` nimmt einen eingebauten Glyphennamen (`close`, `minimize`, `check`,
-`chevron`, `search`, `dot`), eine Asset-ID (`"rbxassetid://123"` oder `123`),
-oder einen beliebigen Text — dann wird dessen erster Buchstabe gesetzt.
+`Icon` takes a built-in glyph name (`close`, `minimize`, `check`, `chevron`,
+`search`, `dot`), an asset id (`"rbxassetid://123"` or `123`), or any text — in
+which case its first letter is used.
 
-Elemente können auch direkt an den Tab gehängt werden, dann landen sie in einer
-unbenannten Section:
+Elements can also be added straight to a tab, where they land in an untitled
+section:
 
 ```lua
 Tab:AddToggle("Fly", { Title = "Fly" })
@@ -116,25 +118,25 @@ Tab:AddToggle("Fly", { Title = "Fly" })
 
 ---
 
-## Elemente
+## Elements
 
-Jede `Add*`-Methode akzeptiert beide Schreibweisen:
+Every `Add*` method accepts both spellings:
 
 ```lua
 Box:AddToggle("FlagName", { Title = "…" })
 Box:AddToggle({ Flag = "FlagName", Title = "…" })
 ```
 
-Jede gibt ein Element-Objekt zurück mit `:SetValue(v, silent?)`, `:SetTitle(s)`,
-`:SetDescription(s)`, `:SetVisible(b)`, `:SetEnabled(b)`, `:Destroy()` und dem
-aktuellen Wert unter `.Value`.
+Each returns an element object with `:SetValue(v, silent?)`, `:SetTitle(s)`,
+`:SetDescription(s)`, `:SetVisible(b)`, `:SetEnabled(b)`, `:Destroy()`, and the
+current value on `.Value`.
 
 ### Button
 
 ```lua
 Box:AddButton({
     Title       = "Kill all",
-    Description = "Optionale zweite Zeile",
+    Description = "Optional second line",
     Callback    = function() end,
 })
 ```
@@ -150,7 +152,7 @@ local t = Box:AddToggle("Aimbot", {
 t:Toggle()
 ```
 
-Ein Toggle kann eine kompakte Tastenbelegung direkt in der Zeile tragen:
+A toggle can carry a compact keybind inline on the same row:
 
 ```lua
 Box:AddToggle("Aimbot", { Title = "Aimbot" })
@@ -165,14 +167,14 @@ Box:AddSlider("FOV", {
     Min      = 10,
     Max      = 360,
     Default  = 120,
-    Rounding = 0,      -- Nachkommastellen
-    Step     = nil,    -- optionale Rasterung
-    Suffix   = "°",
+    Rounding = 0,      -- decimal places
+    Step     = nil,    -- optional snapping
+    Suffix   = "deg",
     Callback = function(v) end,
 })
 ```
 
-Der Zahlenwert rechts ist ein Eingabefeld — man kann den Wert auch tippen.
+The number on the right is an input field — the value can be typed as well.
 
 ### Dropdown
 
@@ -180,18 +182,18 @@ Der Zahlenwert rechts ist ein Eingabefeld — man kann den Wert auch tippen.
 Box:AddDropdown("Target", {
     Title     = "Target part",
     Values    = { "Head", "Torso" },
-    Default   = "Head",      -- Wert, oder Index als Zahl
+    Default   = "Head",      -- a value, or an index as a number
     Multi     = false,
-    Search    = false,       -- ab 10 Einträgen automatisch an
+    Search    = false,       -- switches on automatically past 10 entries
     AllowNull = true,
     Callback  = function(v) end,
 })
 ```
 
-Bei `Multi = true` ist `.Value` eine Menge (`{ ["Head"] = true }`);
-`:GetSelected()` gibt eine geordnete Liste zurück. `:SetValues(liste)` tauscht
-die Auswahlmöglichkeiten und behält gültige Auswahlen bei. `:Open()` und
-`:Close()` klappen das Panel auch ohne Mausklick auf.
+With `Multi = true`, `.Value` is a set (`{ ["Head"] = true }`) and
+`:GetSelected()` returns an ordered list. `:SetValues(list)` swaps the choices
+and keeps any selection that is still valid. `:Open()` and `:Close()` drive the
+panel without a pointer.
 
 ### Input
 
@@ -201,7 +203,7 @@ Box:AddInput("PlayerName", {
     Placeholder = "username",
     Numeric     = false,
     MaxLength   = nil,
-    Finished    = true,   -- false = Callback bei jedem Zeichen
+    Finished    = true,   -- false fires the callback on every keystroke
     Width       = 120,
     Callback    = function(v) end,
 })
@@ -215,12 +217,12 @@ Box:AddKeybind("NoclipKey", {
     Default         = Enum.KeyCode.V,
     Mode            = "Toggle",   -- Toggle | Hold | Always
     ShowMode        = true,
-    Callback        = function(active) end,   -- Taste ausgelöst
-    ChangedCallback = function(key, mode) end, -- Belegung geändert
+    Callback        = function(active) end,    -- key fired
+    ChangedCallback = function(key, mode) end, -- binding changed
 })
 ```
 
-`Escape` beim Belegen löscht die Taste.
+`Escape` while binding clears the key.
 
 ### Colorpicker
 
@@ -228,28 +230,27 @@ Box:AddKeybind("NoclipKey", {
 Box:AddColorpicker("EspColor", {
     Title        = "Box colour",
     Default      = Color3.fromRGB(110, 120, 255),
-    Transparency = 0,      -- weglassen, um den Alpha-Regler auszublenden
-    Callback     = function(farbe, transparenz) end,
+    Transparency = 0,      -- omit to hide the alpha slider
+    Callback     = function(colour, transparency) end,
 })
 ```
 
-SV-Fläche, Farbtonleiste, optionale Alpha-Leiste und ein Hex-Feld. Auch hier
-öffnen und schließen `:Open()` und `:Close()` das Panel aus dem Code heraus.
+An SV square, a hue bar, an optional alpha bar and a hex field. `:Open()` and
+`:Close()` drive the panel from code here too.
 
-### Theme-Picker
+### Theme picker
 
 ```lua
 Box:AddThemePicker({ Callback = function(name) end })
 ```
 
-Ein Raster aus Kacheln, die jeweils in den Farben des Themes gezeichnet sind,
-das sie anbieten.
+A grid of tiles, each painted in the colours of the theme it offers.
 
-### Statisches
+### Static content
 
 ```lua
 Box:AddLabel("Text", { Bold = false, RichText = false, TextSize = 12.5 })
-Box:AddParagraph({ Title = "Überschrift", Content = "Fließtext" })
+Box:AddParagraph({ Title = "Heading", Content = "Body copy" })
 Box:AddDivider()
 ```
 
@@ -257,66 +258,65 @@ Box:AddDivider()
 
 ## Flags
 
-Jedes Element mit einem Flag-Namen schreibt in zwei Tabellen:
+Every element with a flag name writes into two tables:
 
 ```lua
-Cyz.Flags["Aimbot"]    --> der rohe Wert
-Cyz.Options["Aimbot"]  --> das Element-Objekt
+Cyz.Flags["Aimbot"]    --> the raw value
+Cyz.Options["Aimbot"]  --> the element object
 ```
 
-Bequemer:
+More conveniently:
 
 ```lua
 Cyz:Get("Aimbot")
-Cyz:Set("Aimbot", true)          -- ruft den Callback
-Cyz:Set("Aimbot", true, true)    -- still
-Cyz:Dump()                       -- alle Flags mit Typ und Wert
+Cyz:Set("Aimbot", true)          -- fires the callback
+Cyz:Set("Aimbot", true, true)    -- silent
+Cyz:Dump()                       -- every flag with its type and value
 ```
 
 ---
 
-## Konfigurationen
+## Configs
 
 ```lua
-Cyz:SetConfigFolder("cyz/meinscript")
+Cyz:SetConfigFolder("cyz/myscript")
 
-Cyz:SaveConfig("default")   --> true | false, fehler
+Cyz:SaveConfig("default")   --> true | false, error
 Cyz:LoadConfig("default")
 Cyz:DeleteConfig("default")
-Cyz:ListConfigs()           --> { "default", … }
+Cyz:ListConfigs()           --> { "default", ... }
 
-Cyz:IgnoreFlag("PlayerName")  -- vom Speichern ausnehmen
+Cyz:IgnoreFlag("PlayerName")  -- exclude from saving
 ```
 
-`Window:AddConfigSection(tab)` setzt dafür eine fertige Oberfläche ein.
-`Color3` und `EnumItem` werden verlustfrei serialisiert.
+`Window:AddConfigSection(tab)` drops in a ready-made interface for this.
+`Color3` and `EnumItem` survive the round trip intact.
 
-Ohne Dateisystemzugriff geben die Funktionen `false` mit einer Begründung
-zurück; die Flags funktionieren weiterhin im Speicher.
+Without filesystem access these return `false` plus a reason; flags keep
+working in memory.
 
 ---
 
 ## Themes
 
-Mitgeliefert: `Midnight`, `Obsidian`, `Rose`, `Aurora`, `Amber`, `Daylight`.
+Shipped: `Midnight`, `Obsidian`, `Rose`, `Aurora`, `Amber`, `Daylight`.
 
 ```lua
 Cyz:SetTheme("Rose")
-Cyz:GetTheme()        --> die Farbtabelle
+Cyz:GetTheme()        --> the colour table
 Cyz:GetThemeName()
 Cyz:ListThemes()
 
-Cyz:RegisterTheme("Meins", {
+Cyz:RegisterTheme("Mine", {
     Accent = Color3.fromRGB(0, 200, 255),
     Window = Color3.fromRGB(10, 12, 16),
-    -- alles Weitere wird von Midnight geerbt
+    -- everything else is inherited from Midnight
 })
 ```
 
-Ein Themewechsel läuft animiert über die gesamte bestehende Oberfläche; es muss
-nichts neu aufgebaut werden.
+A theme change animates across the whole existing interface; nothing is rebuilt.
 
-Hintergrund-Weichzeichner:
+Background blur:
 
 ```lua
 Cyz:SetAcrylic(true)
@@ -325,78 +325,77 @@ Cyz:SetAcrylicIntensity(18)
 
 ---
 
-## Benachrichtigungen und Dialoge
+## Notifications and dialogs
 
 ```lua
 Cyz:Notify({
-    Title    = "Gespeichert",
-    Content  = "Config geschrieben.",
+    Title    = "Saved",
+    Content  = "Config written.",
     Kind     = "success",   -- info | success | warning | error
-    Duration = 5,           -- 0 = bleibt stehen
-    Buttons  = {            -- optional; dann kein Klick-zum-Schließen
-        { Title = "Rückgängig", Callback = function() end },
+    Duration = 5,           -- 0 keeps it on screen
+    Buttons  = {            -- optional; suppresses click-to-dismiss
+        { Title = "Undo", Callback = function() end },
     },
 })
 ```
 
 ```lua
 Window:Dialog({
-    Title       = "Alles löschen?",
-    Content     = "Das lässt sich nicht rückgängig machen.",
+    Title       = "Delete everything?",
+    Content     = "This cannot be undone.",
     Dismissable = true,
     Buttons = {
-        { Title = "Abbrechen" },
-        { Title = "Löschen", Danger = true, Callback = function() end },
+        { Title = "Cancel" },
+        { Title = "Delete", Danger = true, Callback = function() end },
     },
 })
 ```
 
 ---
 
-## Wasserzeichen
+## Watermark
 
 ```lua
-Cyz:SetWatermark("cyz v{version}  •  {fps} fps  •  {ping} ms")
+Cyz:SetWatermark("cyz v{version} | {fps} fps | {ping} ms")
 Cyz:SetWatermarkPosition(UDim2.fromOffset(16, 16))
-Cyz:SetWatermark(nil)   -- aus
+Cyz:SetWatermark(nil)   -- off
 ```
 
-Platzhalter: `{fps}` `{ping}` `{game}` `{player}` `{time}` `{version}`.
+Placeholders: `{fps}` `{ping}` `{game}` `{player}` `{time}` `{version}`.
 
 ---
 
-## Aufräumen
+## Unloading
 
 ```lua
 Cyz:Destroy()   -- alias: Cyz:Unload()
 ```
 
-Trennt jede Verbindung, entfernt den Weichzeichner und löscht die Oberfläche.
+Disconnects every connection, removes the blur and destroys the interface.
 
-Beim Laden räumt die Library eine vorherige Instanz selbst weg — ein erneutes
-Ausführen des Scripts stapelt also keine zweite Oberfläche mit doppelt
-feuernden Tastenbelegungen. Wer zwei Instanzen nebeneinander will, setzt vorher
-`getgenv().__CYZ_KEEP_PREVIOUS = true`.
+Loading the library unloads a previous instance first, so re-running the script
+cannot stack a second interface with keybinds firing twice. To keep two
+instances side by side, set `getgenv().__CYZ_KEEP_PREVIOUS = true` beforehand.
 
 ---
 
-## Umgebungen
+## Environments
 
-Die Library läuft ohne Executor-Globals. Was fehlt, wird abgefangen:
+The library runs without executor globals. Anything missing is handled:
 
-| Funktion | Ohne sie |
+| Function | Without it |
 |---|---|
-| `gethui` | Oberfläche geht nach CoreGui, sonst PlayerGui |
-| `writefile` / `readfile` / … | Configs deaktiviert, Flags laufen weiter |
-| `BlurEffect` in Lighting | Acrylic bleibt aus, sonst unverändert |
+| `gethui` | Interface goes to CoreGui, else PlayerGui |
+| `writefile` / `readfile` / ... | Configs disabled, flags keep working |
+| `BlurEffect` in Lighting | Acrylic stays off, nothing else changes |
 
-Auf Touch-Geräten wird ein kleineres Standardfenster gewählt, der Resize-Griff
-ausgeblendet, und der schwebende Chip dient zum Wiederöffnen.
+On touch devices the default window is smaller, the resize grip is hidden, and
+the floating chip is used to reopen the menu.
 
 ---
 
-## Lokale Entwicklung
+## Local development
 
-`examples/demo.lua` lädt `cyz/cyz.lua` aus dem Workspace-Ordner des Executors,
-wenn es dort liegt, und greift sonst auf `CYZ_URL` zurück. So testet man
-Änderungen, ohne jedes Mal hochzuladen.
+`examples/demo.lua` loads `cyz/cyz.lua` from the executor's workspace folder if
+it is there, and falls back to `CYZ_URL` otherwise — so changes can be tested
+without uploading each time.
